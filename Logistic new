@@ -1,897 +1,917 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WES Invoice Generator</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-    
-    #itemsTable {
-      table-layout: fixed;
-      width: 100%;
-    }
-    
-    #itemsTable th:nth-child(1) { width: 5%; }
-    #itemsTable th:nth-child(2) { width: 35%; }
-    #itemsTable th:nth-child(3) { width: 10%; }
-    #itemsTable th:nth-child(4) { width: 12%; }
-    #itemsTable th:nth-child(5) { width: 8%; }
-    #itemsTable th:nth-child(6) { width: 10%; }
-    #itemsTable th:nth-child(7) { width: 8%; }
-    #itemsTable th:nth-child(8) { width: 10%; }
-    #itemsTable th:nth-child(9) { width: 12%; }
-    #itemsTable th:nth-child(10) { width: 5%; }
-    
-    .remove-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: background 0.3s;
-    }
-    
-    .remove-btn:hover {
-      background: #dc2626;
-    }
-    
-    textarea, input {
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    
-    /* Modal styles for preview */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      overflow: auto;
-    }
-    
-    .modal-content {
-      background-color: #fefefe;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 90%;
-      max-width: 1000px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-    
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .close:hover {
-      color: black;
-    }
-    
-    #previewCanvas {
-      width: 100%;
-      height: 80vh;
-      border: 1px solid #ddd;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WES Invoice Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        #itemsTable {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #itemsTable th:nth-child(1) { width: 5%; }
+        #itemsTable th:nth-child(2) { width: 35%; }
+        #itemsTable th:nth-child(3) { width: 10%; }
+        #itemsTable th:nth-child(4) { width: 12%; }
+        #itemsTable th:nth-child(5) { width: 8%; }
+        #itemsTable th:nth-child(6) { width: 10%; }
+        #itemsTable th:nth-child(7) { width: 8%; }
+        #itemsTable th:nth-child(8) { width: 10%; }
+        #itemsTable th:nth-child(9) { width: 12%; }
+        #itemsTable th:nth-child(10) { width: 5%; }
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+        textarea, input {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        #previewCanvas {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen">
-  
-  <div class="max-w-7xl mx-auto py-8 px-4">
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-        </svg>
-      </div>
-      <h1 class="text-4xl font-bold text-gray-900 mb-2">WES Document Generator</h1>
-      <p class="text-gray-600">Create professional invoices, packing lists & delivery notes</p>
-    </div>
-
-    <div class="grid lg:grid-cols-3 gap-6">
-      <!-- Sidebar -->
-      <div class="lg:col-span-1">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-2xl space-y-4">
-          <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>⚙️</span> Settings
-          </h2>
-
-          <div>
-            <label class="block text-sm font-semibold mb-2">Document Type</label>
-            <select id="docType" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none">
-              <option value="invoice">Commercial Invoice</option>
-              <option value="packing">Packing List</option>
-              <option value="dn">Delivery Note</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold mb-2">Document No.</label>
-            <input id="docNo" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none" placeholder="Doc No" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold mb-2">Date</label>
-            <input id="docDate" type="date" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold mb-2">Currency</label>
-            <select id="currency" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none">
-              <option value="USD">USD - US Dollar</option>
-              <option value="SGD">SGD - Singapore Dollar</option>
-              <option value="INR">INR - Indian Rupee</option>
-              <option value="CNY">CNY - Chinese Yuan</option>
-            </select>
-          </div>
-
-          <div class="space-y-3 pt-4 border-t border-gray-700">
-            <button id="addItemBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
-              <span>➕</span> Add Item
-            </button>
-            <button id="clearItemsBtn" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
-              <span>🗑</span> Clear All Items
-            </button>
-            <button id="previewBtn" class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
-              <span>👁️</span> Preview
-            </button>
-            <button id="genBtn" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
-              <span>📑</span> Generate PDF
-            </button>
-          </div>
+    <div class="max-w-7xl mx-auto py-8 px-4">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">WES Document Generator</h1>
+            <p class="text-gray-600">Create professional invoices, packing lists & delivery notes</p>
         </div>
-      </div>
 
-      <!-- Form -->
-      <div class="lg:col-span-2">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl space-y-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span>📝</span> Document Details
-          </h2>
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-2xl space-y-4">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span>⚙️</span> Settings
+                    </h2>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">Vessel Name</label>
-              <input id="vesselName" placeholder="Enter vessel name" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">IMO Number</label>
-              <input id="imoNumber" placeholder="Enter IMO number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">PO Number</label>
-              <input id="poNumber" placeholder="Enter PO number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">WES No</label>
-              <input id="wesNumber" placeholder="Enter WES number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">Client Name</label>
-              <input id="clientName" placeholder="Enter client name" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">Package Details</label>
-              <input id="packageDetails" placeholder="Enter package details" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
-            </div>
-          </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Document Type</label>
+                        <select id="docType" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none">
+                            <option value="invoice">Commercial Invoice</option>
+                            <option value="packing">Packing List</option>
+                            <option value="dn">Delivery Note</option>
+                        </select>
+                    </div>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">Invoice To</label>
-              <textarea id="invoiceTo" rows="6" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none" placeholder="Enter invoice to address (supports Chinese characters)&#10;支持中文字符"></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700">Delivery Address</label>
-              <textarea id="shipTo" rows="6" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none" placeholder="Enter delivery address (supports Chinese characters)&#10;输入交货地址"></textarea>
-            </div>
-          </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Document No.</label>
+                        <input id="docNo" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none" placeholder="Doc No" />
+                    </div>
 
-          <div class="overflow-x-auto border-2 border-gray-200 rounded-xl">
-            <table id="itemsTable" class="w-full text-sm">
-              <thead class="bg-gradient-to-r from-blue-50 to-green-50">
-                <tr>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300">S.No</th>
-                  <th class="text-left p-3 font-bold border-b-2 border-gray-300">Item Description</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300 dn-hide">HS Code</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300 dn-hide">Country</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300">Unit</th>
-                  <th class="text-right p-3 font-bold border-b-2 border-gray-300 invoice-hide">Unit Rate</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300">Qty</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300 invoice-hide">Discount %</th>
-                  <th class="text-right p-3 font-bold border-b-2 border-gray-300 invoice-hide">Amount</th>
-                  <th class="text-center p-3 font-bold border-b-2 border-gray-300">Action</th>
-                </tr>
-              </thead>
-              <tbody id="itemsBody"></tbody>
-            </table>
-          </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Date</label>
+                        <input id="docDate" type="date" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                    </div>
 
-          <div class="text-right font-bold text-xl mt-4 p-4 bg-green-50 rounded-xl invoice-hide border-2 border-green-200">
-            <span class="text-gray-700">Total: </span>
-            <span id="webTotal" class="text-green-700">0.00</span>
-          </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Currency</label>
+                        <select id="currency" class="w-full px-3 py-2 rounded-lg text-gray-900 border-2 border-gray-300 focus:border-blue-500 focus:outline-none">
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="SGD">SGD - Singapore Dollar</option>
+                            <option value="INR">INR - Indian Rupee</option>
+                            <option value="CNY">CNY - Chinese Yuan</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-3 pt-4 border-t border-gray-700">
+                        <button id="addItemBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
+                            <span>➕</span> Add Item
+                        </button>
+                        <button id="clearItemsBtn" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
+                            <span>🗑</span> Clear All Items
+                        </button>
+                        <button id="previewBtn" class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
+                            <span>👁️</span> Preview
+                        </button>
+                        <button id="genBtn" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-xl font-semibold transition shadow-lg flex items-center justify-center gap-2">
+                            <span>📑</span> Generate PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white p-6 rounded-2xl shadow-2xl space-y-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span>📝</span> Document Details
+                    </h2>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">Vessel Name</label>
+                            <input id="vesselName" placeholder="Enter vessel name" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">IMO Number</label>
+                            <input id="imoNumber" placeholder="Enter IMO number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">PO Number</label>
+                            <input id="poNumber" placeholder="Enter PO number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">WES No</label>
+                            <input id="wesNumber" placeholder="Enter WES number" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">Client Name</label>
+                            <input id="clientName" placeholder="Enter client name / 输入客户名称" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">Package Details</label>
+                            <input id="packageDetails" placeholder="Enter package details / 输入包装详情" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">Invoice To</label>
+                            <textarea id="invoiceTo" rows="6" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none" placeholder="Enter invoice to address&#10;输入发票地址&#10;Supports Chinese / 支持中文"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">Delivery Address</label>
+                            <textarea id="shipTo" rows="6" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none" placeholder="Enter delivery address&#10;输入送货地址&#10;Supports Chinese / 支持中文"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border-2 border-gray-200 rounded-xl">
+                        <table id="itemsTable" class="w-full text-sm">
+                            <thead class="bg-gradient-to-r from-blue-50 to-green-50">
+                                <tr>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300">S.No</th>
+                                    <th class="text-left p-3 font-bold border-b-2 border-gray-300">Item Description</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300 dn-hide">HS Code</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300 dn-hide">Country</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300">Unit</th>
+                                    <th class="text-right p-3 font-bold border-b-2 border-gray-300 invoice-hide">Unit Rate</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300">Qty</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300 invoice-hide">Discount %</th>
+                                    <th class="text-right p-3 font-bold border-b-2 border-gray-300 invoice-hide">Amount</th>
+                                    <th class="text-center p-3 font-bold border-b-2 border-gray-300">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-right font-bold text-xl mt-4 p-4 bg-green-50 rounded-xl invoice-hide border-2 border-green-200">
+                        <span class="text-gray-700">Total: </span>
+                        <span id="webTotal" class="text-green-700">0.00</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Preview Modal -->
-  <div id="previewModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2 class="text-2xl font-bold mb-4">Document Preview</h2>
-      <canvas id="previewCanvas"></canvas>
-      <div class="mt-4 flex justify-end gap-2">
-        <button id="closePreviewBtn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">Close</button>
-        <button id="downloadFromPreviewBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Download PDF</button>
-      </div>
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Document Preview</h2>
+            <iframe id="previewCanvas" style="width: 100%; height: 80vh; border: 1px solid #ddd;"></iframe>
+            <div class="mt-4 flex justify-end gap-2">
+                <button id="closePreviewBtn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">Close</button>
+                <button id="downloadFromPreviewBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Download PDF</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const { jsPDF } = window.jspdf;
-    
-    // Fixed image URLs
-    const HEADER_IMAGE = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f0929db4fdbc5dd9362093/e71e442e1_Picture1.jpg";
-    const STAMP_IMAGE = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f0929db4fdbc5dd9362093/20e6bd225_Stamp.jpeg";
-    
-    function $(id) { return document.getElementById(id); }
-    function money(v) { return Number(v || 0).toFixed(2); }
-    
-    $('docDate').valueAsDate = new Date();
+    <script>
+        const { jsPDF } = window.jspdf;
 
-    let items = [];
+        // UPDATED HEADER IMAGE WITH YOUR NEW LOGO
+        const HEADER_IMAGE = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f328c71c2e636d27d73696/05b608c81_weslogo.jpg";
+        const STAMP_IMAGE = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f0929db4fdbc5dd9362093/20e6bd225_Stamp.jpeg";
 
-    function addItem() {
-      items.push({ 
-        desc: "", 
-        hs: "", 
-        country: "", 
-        unit: "PCE", 
-        rate: 0, 
-        qty: 1, 
-        discount: 0 
-      });
-      render();
-    }
-
-    function removeItem(index) {
-      items.splice(index, 1);
-      render();
-    }
-
-    function clearItems() { 
-      if (confirm('Are you sure you want to clear all items?')) {
-        items = []; 
-        render(); 
-      }
-    }
-
-    function updateColumnVisibility() {
-      const docType = $('docType').value;
-      const isInvoice = docType === 'invoice';
-      const isDN = docType === 'dn';
-      
-      document.querySelectorAll('.dn-hide').forEach(el => {
-        el.style.display = isDN ? 'none' : '';
-      });
-      
-      document.querySelectorAll('.invoice-hide').forEach(el => {
-        el.style.display = isInvoice ? '' : 'none';
-      });
-      
-      $('webTotal').parentElement.style.display = isInvoice ? '' : 'none';
-    }
-
-    function render() {
-      const body = $('itemsBody');
-      body.innerHTML = "";
-      
-      items.forEach((it, i) => {
-        const row = document.createElement("tr");
-        row.className = "border-b hover:bg-gray-50 transition";
-        const amount = it.rate * it.qty * (1 - it.discount / 100);
-        
-        row.innerHTML = `
-          <td class="text-center p-2 font-semibold">${i + 1}</td>
-          <td class="p-2"><input data-i="${i}" data-f="desc" value="${it.desc}" class="w-full border-2 border-gray-300 rounded px-2 py-1 focus:border-blue-500 focus:outline-none" placeholder="Item description (支持中文)"/></td>
-          <td class="p-2 dn-hide"><input data-i="${i}" data-f="hs" value="${it.hs}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
-          <td class="p-2 dn-hide"><input data-i="${i}" data-f="country" value="${it.country}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
-          <td class="p-2"><input data-i="${i}" data-f="unit" value="${it.unit}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
-          <td class="p-2 invoice-hide"><input data-i="${i}" data-f="rate" type="number" step="0.01" value="${it.rate}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-right focus:border-blue-500 focus:outline-none"/></td>
-          <td class="p-2"><input data-i="${i}" data-f="qty" type="number" step="1" value="${it.qty}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
-          <td class="p-2 invoice-hide"><input data-i="${i}" data-f="discount" type="number" step="0.01" value="${it.discount}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
-          <td class="amount text-right p-2 font-semibold text-green-700 invoice-hide">${money(amount)}</td>
-          <td class="text-center p-2"><button class="remove-btn" data-index="${i}">✕</button></td>
-        `;
-        body.appendChild(row);
-      });
-      
-      body.querySelectorAll("input").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const i = inp.dataset.i, f = inp.dataset.f;
-          items[i][f] = f === "rate" || f === "qty" || f === "discount" ? Number(inp.value) : inp.value;
-          updateTotals();
-          renderAmountsOnly();
-        });
-      });
-      
-      body.querySelectorAll(".remove-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const index = parseInt(btn.getAttribute("data-index"));
-          removeItem(index);
-        });
-      });
-      
-      updateColumnVisibility();
-      updateTotals();
-    }
-
-    function renderAmountsOnly() {
-      document.querySelectorAll("#itemsBody tr").forEach((row, i) => {
-        if (items[i]) {
-          const amount = items[i].rate * items[i].qty * (1 - items[i].discount / 100);
-          const amountCell = row.querySelector(".amount");
-          if (amountCell) {
-            amountCell.textContent = money(amount);
-          }
+        function $(id) {
+            return document.getElementById(id);
         }
-      });
-    }
 
-    function updateTotals() {
-      let subtotal = items.reduce((s, it) => s + (it.rate * it.qty * (1 - it.discount / 100)), 0);
-      const currencyCode = $('currency').value;
-      $("webTotal").textContent = currencyCode + " " + money(subtotal);
-    }
-
-    $('addItemBtn').onclick = addItem;
-    $('clearItemsBtn').onclick = clearItems;
-    $('docType').onchange = updateColumnVisibility;
-    
-    // Add initial item
-    addItem();
-
-    // Helper function to split text with proper Chinese character support
-    function splitTextWithChinese(pdf, text, maxWidth) {
-      const lines = [];
-      const paragraphs = text.split('\n');
-      
-      paragraphs.forEach(para => {
-        if (!para.trim()) {
-          lines.push('');
-          return;
+        function money(v) {
+            return Number(v || 0).toFixed(2);
         }
-        
-        let currentLine = '';
-        // Handle Chinese characters by splitting them individually
-        const chars = para.split('');
-        
-        chars.forEach((char, i) => {
-          const testLine = currentLine + char;
-          const testWidth = pdf.getTextWidth(testLine);
-          
-          if (testWidth > maxWidth && currentLine) {
-            lines.push(currentLine);
-            currentLine = char;
-          } else {
-            currentLine = testLine;
-          }
-        });
-        
-        if (currentLine) {
-          lines.push(currentLine);
-        }
-      });
-      
-      return lines;
-    }
 
-    function drawReceiverBox(pdf, pageW, pageH, margin, topY) {
-      const tableW = pageW - 2 * margin;
-      const tableX = margin;
-      let yBox = topY;
-      
-      pdf.setFontSize(12);
-      pdf.setFont("helvetica", "normal");
-      pdf.text("For Receiver", pageW / 2, yBox, { align: "center" });
-      yBox += 6;
-      
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "normal");
-      pdf.setDrawColor(0, 0, 0);
-      pdf.setLineWidth(0.5);
-      pdf.rect(tableX, yBox, tableW, 10);
-      pdf.text("Receiver to Sign and Stamp as Received, with received date, Name and Signature",
-        pageW / 2, yBox + 7, { align: "center" });
-      yBox += 10;
-      
-      const boxHeight = 40;
-      pdf.rect(tableX, yBox, tableW, boxHeight);
+        $('docDate').valueAsDate = new Date();
 
-      const rows = [yBox + 10, yBox + 20, yBox + 30, yBox + boxHeight];
-      for (let r of rows) {
-        pdf.line(tableX, r, tableX + tableW * 0.6, r);
-      }
-      
-      const colDividerX = tableX + tableW * 0.6;
-      pdf.line(colDividerX, yBox, colDividerX, yBox + boxHeight);
-      
-      pdf.setFontSize(9);
-      pdf.text("Signature of Receiver", tableX + 2, yBox + 7);
-      pdf.text("Name of Receiver", tableX + 2, yBox + 17);
-      pdf.text("Title of Receiver", tableX + 2, yBox + 27);
-      pdf.text("Date Received", tableX + 2, yBox + 37);
-      
-      pdf.setFontSize(10);
-      pdf.text("Ship or Company Stamp", colDividerX + (tableW * 0.4)/2, yBox + boxHeight/2, { align: "center" });
+        let items = [];
 
-      return yBox + boxHeight;
-    }
-
-    async function generatePDF(isPreview = false) {
-      try {
-        const docType = $('docType').value;
-        const pdf = new jsPDF();
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const margin = 12;
-        const currencyCode = $('currency').value;
-
-        // Fixed header and stamp
-        async function drawHeader(yStart) {
-          try {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            await new Promise((resolve, reject) => {
-              img.onload = resolve;
-              img.onerror = reject;
-              img.src = HEADER_IMAGE;
+        function addItem() {
+            items.push({
+                desc: "",
+                hs: "",
+                country: "",
+                unit: "PCE",
+                rate: 0,
+                qty: 1,
+                discount: 0
             });
-            
-            pdf.addImage(img, "JPEG", margin, yStart, pageW - 2 * margin, 25);
-            return yStart + 30;
-          } catch (e) {
-            console.error("Header image error:", e);
-            pdf.setFontSize(16);
-            pdf.setFont("helvetica", "bold");
-            pdf.text("WES MARINE CONTROLS PTE LTD", pageW / 2, yStart + 10, { align: "center" });
-            return yStart + 15;
-          }
+            render();
         }
 
-        let currentY = await drawHeader(5);
-        
-        pdf.setFontSize(9);
-        pdf.setFont("helvetica", "normal");
-        pdf.text("UEN/GST Registration No: 202018019H", margin, currentY);
-        currentY += 5;
+        function removeItem(index) {
+            items.splice(index, 1);
+            render();
+        }
 
-        pdf.setFontSize(14);
-        pdf.setFont("helvetica", "bold");
-        const titleY = currentY + 5;
-        if (docType === "invoice") pdf.text("COMMERCIAL INVOICE", pageW / 2, titleY, { align: "center" });
-        else if (docType === "packing") pdf.text("PACKING LIST", pageW / 2, titleY, { align: "center" });
-        else pdf.text("DELIVERY NOTE", pageW / 2, titleY, { align: "center" });
-
-        pdf.setFontSize(10);
-        pdf.setFont("helvetica", "normal");
-        pdf.text(`No: ${$('docNo').value || "DOC-" + Date.now()}`, pageW / 2, titleY + 6, { align: "center" });
-        pdf.text(`Date: ${$('docDate').value}`, pageW / 2, titleY + 12, { align: "center" });
-
-        let y = titleY + 20;
-        
-        // Package details box
-        const packageDetails = $('packageDetails').value;
-        pdf.setFontSize(9);
-        pdf.setFont("helvetica", "normal");
-        
-        const packageLines = splitTextWithChinese(pdf, `PACKAGE DETAILS: ${packageDetails}`, pageW - 2 * margin - 8);
-        const detailsBoxHeight = Math.max(36, 6 + (packageLines.length * 5));
-        
-        pdf.setLineWidth(0.5);
-        pdf.rect(margin, y, pageW - 2 * margin, detailsBoxHeight);
-        let boxY = y + 6;
-        pdf.text(`VESSEL NAME: ${$('vesselName').value}`, margin + 4, boxY); boxY += 5;
-        pdf.text(`IMO NUMBER: ${$('imoNumber').value}`, margin + 4, boxY); boxY += 5;
-        pdf.text(`PO NUMBER: ${$('poNumber').value}`, margin + 4, boxY); boxY += 5;
-        pdf.text(`WES NO: ${$('wesNumber').value}`, margin + 4, boxY); boxY += 5;
-        pdf.text(`CLIENT NAME: ${$('clientName').value}`, margin + 4, boxY); boxY += 5;
-        
-        packageLines.forEach(line => {
-          pdf.text(line, margin + 4, boxY);
-          boxY += 5;
-        });
-
-        y += detailsBoxHeight + 5;
-
-        // Address boxes with improved Chinese support
-        const colW = (pageW - 2 * margin) / 2 - 4;
-        
-        const invoiceText = $('invoiceTo').value.trim();
-        const shipText = $('shipTo').value.trim();
-        
-        // Calculate max lines needed for both boxes
-        const invoiceLines = splitTextWithChinese(pdf, invoiceText, colW - 8);
-        const shipLines = splitTextWithChinese(pdf, shipText, colW - 8);
-        
-        const maxLines = Math.max(invoiceLines.length, shipLines.length);
-        const addressBoxHeight = Math.max(40, (maxLines + 1) * 5 + 10);
-        
-        pdf.rect(margin, y, pageW - 2 * margin, addressBoxHeight);
-        pdf.line(margin + colW + 8, y, margin + colW + 8, y + addressBoxHeight);
-        
-        pdf.setFontSize(10);
-        pdf.setFont("helvetica", "bold");
-        pdf.text("Invoice To:", margin + 4, y + 6);
-        
-        // Delivery Address with black color and normal font
-        pdf.setFont("helvetica", "bold");
-        pdf.setTextColor(0, 0, 0); // Black color
-        pdf.text("Delivery Address:", margin + colW + 12, y + 6);
-        
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(9);
-        
-        // Make sure text stays within the box
-        const maxInvoiceLines = Math.floor((addressBoxHeight - 15) / 5);
-        const maxShipLines = Math.floor((addressBoxHeight - 15) / 5);
-        
-        invoiceLines.slice(0, maxInvoiceLines).forEach((line, i) => pdf.text(line, margin + 4, y + 12 + i * 5));
-        shipLines.slice(0, maxShipLines).forEach((line, i) => pdf.text(line, margin + colW + 12, y + 12 + i * 5));
-
-        y += addressBoxHeight + 5;
-
-        // Items table with dynamic pagination
-        const FIRST_PAGE_ITEMS = 10;
-        
-        if (docType === "invoice") {
-          let remainingItems = [...items];
-          let pageNum = 0;
-          
-          while (remainingItems.length > 0) {
-            if (pageNum > 0) {
-              pdf.addPage();
-              y = margin;
+        function clearItems() {
+            if (confirm('Are you sure you want to clear all items?')) {
+                items = [];
+                render();
             }
-            
-            const itemsForPage = pageNum === 0 ? 
-              remainingItems.splice(0, FIRST_PAGE_ITEMS) : 
-              remainingItems.splice(0, remainingItems.length);
-            
-            const startIndex = pageNum === 0 ? 0 : FIRST_PAGE_ITEMS + (pageNum - 1) * remainingItems.length;
-            
-            const head = [["S.No", "Item Description", "HS Code", "Country", "Unit", "Unit Rate", "Qty", "Discount %", "Amount"]];
-            const body = itemsForPage.map((it, i) => [
-              startIndex + i + 1,
-              it.desc,
-              it.hs,
-              it.country,
-              it.unit,
-              { content: money(it.rate), styles: { halign: 'right' } },
-              it.qty,
-              it.discount + '%',
-              { content: money(it.rate * it.qty * (1 - it.discount / 100)), styles: { halign: 'right' } }
-            ]);
-            
-            pdf.autoTable({
-              startY: y,
-              head,
-              body,
-              styles: {
-                fontSize: 8,
-                lineColor: [0, 0, 0],
-                lineWidth: 0.5,
-                textColor: [0, 0, 0],
-                cellPadding: 2,
-                overflow: 'linebreak',
-                font: 'helvetica'
-              },
-              headStyles: {
-                fillColor: [200, 255, 200],
-                textColor: [0, 0, 0],
-                fontStyle: "bold",
-                halign: 'center',
-                cellPadding: 3
-              },
-              columnStyles: {
-                0: { cellWidth: 12, halign: 'center' },
-                1: { cellWidth: 45, halign: 'left' },
-                2: { cellWidth: 18, halign: 'center' },
-                3: { cellWidth: 22, halign: 'center' },
-                4: { cellWidth: 15, halign: 'center' },
-                5: { cellWidth: 18, halign: 'right' },
-                6: { cellWidth: 12, halign: 'center' },
-                7: { cellWidth: 15, halign: 'center' },
-                8: { cellWidth: 20, halign: 'right' }
-              },
-              theme: "grid",
-              margin: { left: margin, right: margin },
+        }
+
+        function updateColumnVisibility() {
+            const docType = $('docType').value;
+            const isInvoice = docType === 'invoice';
+            const isDN = docType === 'dn';
+
+            document.querySelectorAll('.dn-hide').forEach(el => {
+                el.style.display = isDN ? 'none' : '';
             });
 
-            let finalY = pdf.lastAutoTable.finalY + 10;
-            
-            if (remainingItems.length === 0) {
-              let subtotal = items.reduce((s, it) => s + (it.qty * it.rate * (1 - it.discount / 100)), 0);
-              const lastColX = pageW - margin;
-              
-              if (finalY + 50 > pageH - 30) {
-                pdf.addPage();
-                finalY = margin;
-              }
-              
-              pdf.setFontSize(10);
-              pdf.setFont("helvetica", "normal");
-              pdf.text(`Subtotal: ${currencyCode} ${money(subtotal)}`, lastColX, finalY, { align: "right" });
-              pdf.text(`GST (0%): ${currencyCode} 0.00`, lastColX, finalY + 6, { align: "right" });
-              pdf.setFontSize(12);
-              pdf.setFont("helvetica", "bold");
-              pdf.text(`TOTAL: ${currencyCode} ${money(subtotal)}`, lastColX, finalY + 14, { align: "right" });
-              finalY += 25;
-              
-              pdf.setFontSize(9);
-              pdf.setFont("helvetica", "normal");
-              pdf.text("Issued by:", margin, pageH - 25);
-              pdf.text("WES Marine Controls Pte Ltd.", margin, pageH - 19);
-              pdf.text("This invoice is not for payment", margin, pageH - 9);
+            document.querySelectorAll('.invoice-hide').forEach(el => {
+                el.style.display = isInvoice ? '' : 'none';
+            });
 
-              try {
-                const stampImg = new Image();
-                stampImg.crossOrigin = "anonymous";
-                await new Promise((resolve, reject) => {
-                  stampImg.onload = resolve;
-                  stampImg.onerror = reject;
-                  stampImg.src = STAMP_IMAGE;
+            $('webTotal').parentElement.style.display = isInvoice ? '' : 'none';
+        }
+
+        function render() {
+            const body = $('itemsBody');
+            body.innerHTML = "";
+
+            items.forEach((it, i) => {
+                const row = document.createElement("tr");
+                row.className = "border-b hover:bg-gray-50 transition";
+                const amount = it.rate * it.qty * (1 - it.discount / 100);
+
+                row.innerHTML = `
+                    <td class="text-center p-2 font-semibold">${i + 1}</td>
+                    <td class="p-2"><input data-i="${i}" data-f="desc" value="${it.desc}" class="w-full border-2 border-gray-300 rounded px-2 py-1 focus:border-blue-500 focus:outline-none" placeholder="Item description / 项目描述"/></td>
+                    <td class="p-2 dn-hide"><input data-i="${i}" data-f="hs" value="${it.hs}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="p-2 dn-hide"><input data-i="${i}" data-f="country" value="${it.country}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="p-2"><input data-i="${i}" data-f="unit" value="${it.unit}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="p-2 invoice-hide"><input data-i="${i}" data-f="rate" type="number" step="0.01" value="${it.rate}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-right focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="p-2"><input data-i="${i}" data-f="qty" type="number" step="1" value="${it.qty}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="p-2 invoice-hide"><input data-i="${i}" data-f="discount" type="number" step="0.01" value="${it.discount}" class="w-full border-2 border-gray-300 rounded px-2 py-1 text-center focus:border-blue-500 focus:outline-none"/></td>
+                    <td class="amount text-right p-2 font-semibold text-green-700 invoice-hide">${money(amount)}</td>
+                    <td class="text-center p-2"><button class="remove-btn" data-index="${i}">✕</button></td>
+                `;
+
+                body.appendChild(row);
+            });
+
+            body.querySelectorAll("input").forEach(inp => {
+                inp.addEventListener("input", () => {
+                    const i = inp.dataset.i, f = inp.dataset.f;
+                    items[i][f] = f === "rate" || f === "qty" || f === "discount" ? Number(inp.value) : inp.value;
+                    updateTotals();
+                    renderAmountsOnly();
                 });
+            });
+
+            body.querySelectorAll(".remove-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const index = parseInt(btn.getAttribute("data-index"));
+                    removeItem(index);
+                });
+            });
+
+            updateColumnVisibility();
+            updateTotals();
+        }
+
+        function renderAmountsOnly() {
+            document.querySelectorAll("#itemsBody tr").forEach((row, i) => {
+                if (items[i]) {
+                    const amount = items[i].rate * items[i].qty * (1 - items[i].discount / 100);
+                    const amountCell = row.querySelector(".amount");
+                    if (amountCell) {
+                        amountCell.textContent = money(amount);
+                    }
+                }
+            });
+        }
+
+        function updateTotals() {
+            let subtotal = items.reduce((s, it) => s + (it.rate * it.qty * (1 - it.discount / 100)), 0);
+            const currencyCode = $('currency').value;
+            $("webTotal").textContent = currencyCode + " " + money(subtotal);
+        }
+
+        $('addItemBtn').onclick = addItem;
+        $('clearItemsBtn').onclick = clearItems;
+        $('docType').onchange = updateColumnVisibility;
+
+        // Add initial item
+        addItem();
+
+        // IMPROVED function to detect if text contains Chinese characters
+        function hasChinese(text) {
+            return /[\u4e00-\u9fa5]/.test(text);
+        }
+
+        // ENHANCED Chinese character support function with better word breaking
+        function splitTextWithChinese(pdf, text, maxWidth) {
+            const lines = [];
+            const paragraphs = text.split('\n');
+            
+            paragraphs.forEach(para => {
+                if (!para.trim()) {
+                    lines.push('');
+                    return;
+                }
+
+                // Check if paragraph contains Chinese
+                const containsChinese = hasChinese(para);
                 
-                const stampSize = 25;
-                pdf.addImage(stampImg, "JPEG", pageW - margin - stampSize, pageH - margin - stampSize, stampSize, stampSize);
-              } catch (e) {
-                console.error("Stamp image error:", e);
-              }
-            }
-            
-            pageNum++;
-          }
-        } else if (docType === "packing" || docType === "dn") {
-          let remainingItems = [...items];
-          let pageNum = 0;
-          const columnsToShow = docType === "dn" ? 
-            ["S.No", "Item Description", "Unit", "Qty"] :
-            ["S.No", "Item Description", "HS Code", "Country", "Unit", "Qty"];
-          
-          while (remainingItems.length > 0) {
-            if (pageNum > 0) {
-              pdf.addPage();
-              y = margin;
-            }
-            
-            const itemsForPage = pageNum === 0 ? 
-              remainingItems.splice(0, FIRST_PAGE_ITEMS) : 
-              remainingItems.splice(0, remainingItems.length);
-            
-            const startIndex = pageNum === 0 ? 0 : FIRST_PAGE_ITEMS + (pageNum - 1) * remainingItems.length;
-            
-            const head = [columnsToShow];
-            const body = itemsForPage.map((it, i) => {
-              if (docType === "dn") {
-                return [
-                  startIndex + i + 1,
-                  { content: it.desc, styles: { halign: 'left' } },
-                  it.unit,
-                  it.qty
-                ];
-              } else {
-                return [
-                  startIndex + i + 1,
-                  { content: it.desc, styles: { halign: 'left' } },
-                  it.hs,
-                  it.country,
-                  it.unit,
-                  it.qty
-                ];
-              }
+                if (containsChinese) {
+                    // For mixed or Chinese text, use character-by-character approach
+                    let currentLine = '';
+                    
+                    for (let i = 0; i < para.length; i++) {
+                        const char = para[i];
+                        const testLine = currentLine + char;
+                        const testWidth = pdf.getTextWidth(testLine);
+                        
+                        if (testWidth > maxWidth && currentLine) {
+                            lines.push(currentLine);
+                            currentLine = char;
+                        } else {
+                            currentLine = testLine;
+                        }
+                    }
+                    
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                } else {
+                    // For pure English text, use word-based approach
+                    let currentLine = '';
+                    const words = para.split(' ');
+                    
+                    words.forEach((word, wordIndex) => {
+                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                        const testWidth = pdf.getTextWidth(testLine);
+                        
+                        if (testWidth > maxWidth && currentLine) {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        } else {
+                            currentLine = testLine;
+                        }
+                    });
+                    
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                }
             });
             
-            const columnStyles = docType === "dn" ? {
-              0: { cellWidth: 15, halign: 'center' },
-              1: { cellWidth: 'auto', halign: 'left' },
-              2: { cellWidth: 25, halign: 'center' },
-              3: { cellWidth: 25, halign: 'center' }
-            } : {
-              0: { cellWidth: 15, halign: 'center' },
-              1: { cellWidth: 70, halign: 'left' },
-              2: { cellWidth: 25, halign: 'center' },
-              3: { cellWidth: 30, halign: 'center' },
-              4: { cellWidth: 20, halign: 'center' },
-              5: { cellWidth: 15, halign: 'center' }
-            };
-            
-            pdf.autoTable({
-              startY: y,
-              head,
-              body,
-              styles: {
-                fontSize: 9,
-                lineColor: [0, 0, 0],
-                lineWidth: 0.5,
-                textColor: [0, 0, 0],
-                cellPadding: 2,
-                overflow: 'linebreak',
-                font: 'helvetica'
-              },
-              headStyles: {
-                fillColor: [200, 255, 200],
-                textColor: [0, 0, 0],
-                fontStyle: "bold",
-                halign: 'center',
-                cellPadding: 3
-              },
-              columnStyles,
-              theme: "grid",
-              margin: { left: margin, right: margin },
-            });
-            
-            if (remainingItems.length === 0) {
-              const receiverY = pdf.lastAutoTable.finalY + 10;
-              if (receiverY + 60 > pageH) {
-                pdf.addPage();
-                drawReceiverBox(pdf, pageW, pageH, margin, margin);
-              } else {
-                drawReceiverBox(pdf, pageW, pageH, margin, receiverY);
-              }
+            return lines;
+        }
+
+        function drawReceiverBox(pdf, pageW, pageH, margin, topY) {
+            const tableW = pageW - 2 * margin;
+            const tableX = margin;
+            let yBox = topY;
+
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "normal");
+            pdf.text("For Receiver", pageW / 2, yBox, { align: "center" });
+            yBox += 6;
+
+            pdf.setFontSize(9);
+            pdf.setFont("helvetica", "normal");
+            pdf.setDrawColor(0, 0, 0);
+            pdf.setLineWidth(0.5);
+            pdf.rect(tableX, yBox, tableW, 10);
+            pdf.text("Receiver to Sign and Stamp as Received, with received date, Name and Signature", pageW / 2, yBox + 7, { align: "center" });
+            yBox += 10;
+
+            const boxHeight = 40;
+            pdf.rect(tableX, yBox, tableW, boxHeight);
+
+            const rows = [yBox + 10, yBox + 20, yBox + 30, yBox + boxHeight];
+            for (let r of rows) {
+                pdf.line(tableX, r, tableX + tableW * 0.6, r);
             }
-            
-            pageNum++;
-          }
+
+            const colDividerX = tableX + tableW * 0.6;
+            pdf.line(colDividerX, yBox, colDividerX, yBox + boxHeight);
+
+            pdf.setFontSize(9);
+            pdf.text("Signature of Receiver", tableX + 2, yBox + 7);
+            pdf.text("Name of Receiver", tableX + 2, yBox + 17);
+            pdf.text("Title of Receiver", tableX + 2, yBox + 27);
+            pdf.text("Date Received", tableX + 2, yBox + 37);
+
+            pdf.setFontSize(10);
+            pdf.text("Ship or Company Stamp", colDividerX + (tableW * 0.4)/2, yBox + boxHeight/2, { align: "center" });
+
+            return yBox + boxHeight;
         }
 
-        if (isPreview) {
-          return pdf;
-        } else {
-          const fileName = (docType === "invoice" ? "commercial_invoice" :
-                           docType === "packing" ? "packing_list" : "delivery_note") + 
-                          "_" + Date.now() + ".pdf";
-          pdf.save(fileName);
-          return null;
+        async function generatePDF(isPreview = false) {
+            try {
+                const docType = $('docType').value;
+                const pdf = new jsPDF();
+                const pageW = pdf.internal.pageSize.getWidth();
+                const pageH = pdf.internal.pageSize.getHeight();
+                const margin = 12;
+                const currencyCode = $('currency').value;
+
+                // Fixed header with your NEW logo
+                async function drawHeader(yStart) {
+                    try {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = HEADER_IMAGE;
+                        });
+                        pdf.addImage(img, "JPEG", margin, yStart, pageW - 2 * margin, 25);
+                        return yStart + 30;
+                    } catch (e) {
+                        console.error("Header image error:", e);
+                        pdf.setFontSize(16);
+                        pdf.setFont("helvetica", "bold");
+                        pdf.text("WES MARINE CONTROLS PTE LTD", pageW / 2, yStart + 10, { align: "center" });
+                        return yStart + 15;
+                    }
+                }
+
+                let currentY = await drawHeader(5);
+
+                pdf.setFontSize(9);
+                pdf.setFont("helvetica", "normal");
+                pdf.text("UEN/GST Registration No: 202018019H", margin, currentY);
+                currentY += 5;
+
+                pdf.setFontSize(14);
+                pdf.setFont("helvetica", "bold");
+                const titleY = currentY + 5;
+
+                if (docType === "invoice") pdf.text("COMMERCIAL INVOICE", pageW / 2, titleY, { align: "center" });
+                else if (docType === "packing") pdf.text("PACKING LIST", pageW / 2, titleY, { align: "center" });
+                else pdf.text("DELIVERY NOTE", pageW / 2, titleY, { align: "center" });
+
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "normal");
+                pdf.text(`No: ${$('docNo').value || "DOC-" + Date.now()}`, pageW / 2, titleY + 6, { align: "center" });
+                pdf.text(`Date: ${$('docDate').value}`, pageW / 2, titleY + 12, { align: "center" });
+
+                let y = titleY + 20;
+
+                // Package details box with Chinese support
+                const packageDetails = $('packageDetails').value;
+                const clientName = $('clientName').value;
+                
+                pdf.setFontSize(9);
+                pdf.setFont("helvetica", "normal");
+                
+                const packageLines = splitTextWithChinese(pdf, `PACKAGE DETAILS: ${packageDetails}`, pageW - 2 * margin - 8);
+                const detailsBoxHeight = Math.max(36, 6 + (packageLines.length * 5));
+
+                pdf.setLineWidth(0.5);
+                pdf.rect(margin, y, pageW - 2 * margin, detailsBoxHeight);
+
+                let boxY = y + 6;
+                pdf.text(`VESSEL NAME: ${$('vesselName').value}`, margin + 4, boxY);
+                boxY += 5;
+                pdf.text(`IMO NUMBER: ${$('imoNumber').value}`, margin + 4, boxY);
+                boxY += 5;
+                pdf.text(`PO NUMBER: ${$('poNumber').value}`, margin + 4, boxY);
+                boxY += 5;
+                pdf.text(`WES NO: ${$('wesNumber').value}`, margin + 4, boxY);
+                boxY += 5;
+                
+                // Handle Chinese in client name
+                const clientLines = splitTextWithChinese(pdf, `CLIENT NAME: ${clientName}`, pageW - 2 * margin - 8);
+                clientLines.forEach(line => {
+                    pdf.text(line, margin + 4, boxY);
+                    boxY += 5;
+                });
+
+                packageLines.forEach(line => {
+                    pdf.text(line, margin + 4, boxY);
+                    boxY += 5;
+                });
+
+                y += detailsBoxHeight + 5;
+
+                // IMPROVED Address boxes - EQUAL WIDTH with CHINESE SUPPORT
+                const colW = (pageW - 2 * margin - 8) / 2;
+                const invoiceText = $('invoiceTo').value.trim();
+                const shipText = $('shipTo').value.trim();
+
+                // Split text with proper Chinese handling
+                const invoiceLines = splitTextWithChinese(pdf, invoiceText, colW - 8);
+                const shipLines = splitTextWithChinese(pdf, shipText, colW - 8);
+                const maxLines = Math.max(invoiceLines.length, shipLines.length);
+                const addressBoxHeight = Math.max(45, (maxLines + 1) * 5 + 15);
+
+                // Draw address box
+                pdf.rect(margin, y, pageW - 2 * margin, addressBoxHeight);
+                pdf.line(margin + colW + 4, y, margin + colW + 4, y + addressBoxHeight);
+
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("Invoice To:", margin + 4, y + 6);
+                pdf.text("Delivery Address:", margin + colW + 8, y + 6);
+
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(9);
+
+                // Render invoice address with Chinese support
+                const maxDisplayLines = Math.floor((addressBoxHeight - 15) / 5);
+                invoiceLines.slice(0, maxDisplayLines).forEach((line, i) => {
+                    pdf.text(line, margin + 4, y + 13 + i * 5);
+                });
+
+                // Render delivery address with Chinese support
+                shipLines.slice(0, maxDisplayLines).forEach((line, i) => {
+                    pdf.text(line, margin + colW + 8, y + 13 + i * 5);
+                });
+
+                y += addressBoxHeight + 5;
+
+                // Items table with Chinese support in item descriptions
+                const FIRST_PAGE_ITEMS = 10;
+
+                if (docType === "invoice") {
+                    let remainingItems = [...items];
+                    let pageNum = 0;
+
+                    while (remainingItems.length > 0) {
+                        if (pageNum > 0) {
+                            pdf.addPage();
+                            y = margin;
+                        }
+
+                        const itemsForPage = pageNum === 0 ? remainingItems.splice(0, FIRST_PAGE_ITEMS) : remainingItems.splice(0, remainingItems.length);
+                        const startIndex = pageNum === 0 ? 0 : FIRST_PAGE_ITEMS + (pageNum - 1) * remainingItems.length;
+
+                        const head = [["S.No", "Item Description", "HS Code", "Country", "Unit", "Unit Rate", "Qty", "Discount %", "Amount"]];
+                        const body = itemsForPage.map((it, i) => [
+                            startIndex + i + 1,
+                            it.desc, // Chinese characters will be rendered properly
+                            it.hs,
+                            it.country,
+                            it.unit,
+                            { content: money(it.rate), styles: { halign: 'right' } },
+                            it.qty,
+                            it.discount + '%',
+                            { content: money(it.rate * it.qty * (1 - it.discount / 100)), styles: { halign: 'right' } }
+                        ]);
+
+                        pdf.autoTable({
+                            startY: y,
+                            head,
+                            body,
+                            styles: {
+                                fontSize: 8,
+                                lineColor: [0, 0, 0],
+                                lineWidth: 0.5,
+                                textColor: [0, 0, 0],
+                                cellPadding: 2,
+                                overflow: 'linebreak',
+                                font: 'helvetica',
+                                minCellHeight: 8
+                            },
+                            headStyles: {
+                                fillColor: [200, 255, 200],
+                                textColor: [0, 0, 0],
+                                fontStyle: "bold",
+                                halign: 'center',
+                                cellPadding: 3
+                            },
+                            columnStyles: {
+                                0: { cellWidth: 12, halign: 'center' },
+                                1: { cellWidth: 55, halign: 'left', overflow: 'linebreak' },
+                                2: { cellWidth: 18, halign: 'center' },
+                                3: { cellWidth: 20, halign: 'center' },
+                                4: { cellWidth: 15, halign: 'center' },
+                                5: { cellWidth: 18, halign: 'right' },
+                                6: { cellWidth: 12, halign: 'center' },
+                                7: { cellWidth: 15, halign: 'center' },
+                                8: { cellWidth: 20, halign: 'right' }
+                            },
+                            theme: "grid",
+                            margin: { left: margin, right: margin },
+                        });
+
+                        let finalY = pdf.lastAutoTable.finalY + 10;
+
+                        if (remainingItems.length === 0) {
+                            let subtotal = items.reduce((s, it) => s + (it.qty * it.rate * (1 - it.discount / 100)), 0);
+                            const lastColX = pageW - margin;
+
+                            if (finalY + 50 > pageH - 30) {
+                                pdf.addPage();
+                                finalY = margin;
+                            }
+
+                            pdf.setFontSize(10);
+                            pdf.setFont("helvetica", "normal");
+                            pdf.text(`Subtotal: ${currencyCode} ${money(subtotal)}`, lastColX, finalY, { align: "right" });
+                            pdf.text(`GST (0%): ${currencyCode} 0.00`, lastColX, finalY + 6, { align: "right" });
+
+                            pdf.setFontSize(12);
+                            pdf.setFont("helvetica", "bold");
+                            pdf.text(`TOTAL: ${currencyCode} ${money(subtotal)}`, lastColX, finalY + 14, { align: "right" });
+
+                            finalY += 25;
+
+                            pdf.setFontSize(9);
+                            pdf.setFont("helvetica", "normal");
+                            pdf.text("Issued by:", margin, pageH - 25);
+                            pdf.text("WES Marine Controls Pte Ltd.", margin, pageH - 19);
+                            pdf.text("This invoice is not for payment", margin, pageH - 9);
+
+                            try {
+                                const stampImg = new Image();
+                                stampImg.crossOrigin = "anonymous";
+                                await new Promise((resolve, reject) => {
+                                    stampImg.onload = resolve;
+                                    stampImg.onerror = reject;
+                                    stampImg.src = STAMP_IMAGE;
+                                });
+                                const stampSize = 25;
+                                pdf.addImage(stampImg, "JPEG", pageW - margin - stampSize, pageH - margin - stampSize, stampSize, stampSize);
+                            } catch (e) {
+                                console.error("Stamp image error:", e);
+                            }
+                        }
+
+                        pageNum++;
+                    }
+                } else if (docType === "packing" || docType === "dn") {
+                    let remainingItems = [...items];
+                    let pageNum = 0;
+
+                    const columnsToShow = docType === "dn" 
+                        ? ["S.No", "Item Description", "Unit", "Qty"]
+                        : ["S.No", "Item Description", "HS Code", "Country", "Unit", "Qty"];
+
+                    while (remainingItems.length > 0) {
+                        if (pageNum > 0) {
+                            pdf.addPage();
+                            y = margin;
+                        }
+
+                        const itemsForPage = pageNum === 0 ? remainingItems.splice(0, FIRST_PAGE_ITEMS) : remainingItems.splice(0, remainingItems.length);
+                        const startIndex = pageNum === 0 ? 0 : FIRST_PAGE_ITEMS + (pageNum - 1) * remainingItems.length;
+
+                        const head = [columnsToShow];
+                        const body = itemsForPage.map((it, i) => {
+                            if (docType === "dn") {
+                                return [
+                                    startIndex + i + 1,
+                                    { content: it.desc, styles: { halign: 'left' } },
+                                    it.unit,
+                                    it.qty
+                                ];
+                            } else {
+                                return [
+                                    startIndex + i + 1,
+                                    { content: it.desc, styles: { halign: 'left' } },
+                                    it.hs,
+                                    it.country,
+                                    it.unit,
+                                    it.qty
+                                ];
+                            }
+                        });
+
+                        const columnStyles = docType === "dn" 
+                            ? {
+                                0: { cellWidth: 15, halign: 'center' },
+                                1: { cellWidth: 125, halign: 'left', overflow: 'linebreak' },
+                                2: { cellWidth: 25, halign: 'center' },
+                                3: { cellWidth: 20, halign: 'center' }
+                            }
+                            : {
+                                0: { cellWidth: 15, halign: 'center' },
+                                1: { cellWidth: 85, halign: 'left', overflow: 'linebreak' },
+                                2: { cellWidth: 22, halign: 'center' },
+                                3: { cellWidth: 25, halign: 'center' },
+                                4: { cellWidth: 20, halign: 'center' },
+                                5: { cellWidth: 15, halign: 'center' }
+                            };
+
+                        pdf.autoTable({
+                            startY: y,
+                            head,
+                            body,
+                            styles: {
+                                fontSize: 9,
+                                lineColor: [0, 0, 0],
+                                lineWidth: 0.5,
+                                textColor: [0, 0, 0],
+                                cellPadding: 2,
+                                overflow: 'linebreak',
+                                font: 'helvetica',
+                                minCellHeight: 8
+                            },
+                            headStyles: {
+                                fillColor: [200, 255, 200],
+                                textColor: [0, 0, 0],
+                                fontStyle: "bold",
+                                halign: 'center',
+                                cellPadding: 3
+                            },
+                            columnStyles,
+                            theme: "grid",
+                            margin: { left: margin, right: margin },
+                        });
+
+                        if (remainingItems.length === 0) {
+                            const receiverY = pdf.lastAutoTable.finalY + 10;
+
+                            if (receiverY + 60 > pageH) {
+                                pdf.addPage();
+                                drawReceiverBox(pdf, pageW, pageH, margin, margin);
+                            } else {
+                                drawReceiverBox(pdf, pageW, pageH, margin, receiverY);
+                            }
+                        }
+
+                        pageNum++;
+                    }
+                }
+
+                if (isPreview) {
+                    return pdf;
+                } else {
+                    const fileName = (docType === "invoice" ? "commercial_invoice" : docType === "packing" ? "packing_list" : "delivery_note") + "_" + Date.now() + ".pdf";
+                    pdf.save(fileName);
+                    return null;
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Error generating PDF: " + e.message);
+                return null;
+            }
         }
-      } catch (e) {
-        console.error(e);
-        alert("Error generating PDF: " + e.message);
-        return null;
-      }
-    }
 
-    // Preview functionality
-    $('previewBtn').onclick = async function() {
-      try {
-        const btn = $('previewBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> Loading...';
-        
-        const pdf = await generatePDF(true);
-        if (pdf) {
-          const canvas = document.getElementById('previewCanvas');
-          const iframe = document.createElement('iframe');
-          iframe.style.width = '100%';
-          iframe.style.height = '80vh';
-          iframe.style.border = '1px solid #ddd';
-          
-          // Replace canvas with iframe for better PDF preview
-          canvas.parentNode.replaceChild(iframe, canvas);
-          iframe.id = 'previewCanvas';
-          
-          // Display PDF in iframe
-          const pdfBlob = pdf.output('blob');
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          iframe.src = pdfUrl;
-          
-          // Show modal
-          document.getElementById('previewModal').style.display = 'block';
-        }
-        
-        btn.disabled = false;
-        btn.innerHTML = '<span>👁️</span> Preview';
-      } catch (e) {
-        console.error(e);
-        alert("Error generating preview: " + e.message);
-        $('previewBtn').disabled = false;
-        $('previewBtn').innerHTML = '<span>👁️</span> Preview';
-      }
-    };
+        // Preview functionality
+        $('previewBtn').onclick = async function() {
+            try {
+                const btn = $('previewBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳</span> Loading...';
 
-    // Modal close functionality
-    document.querySelector('.close').onclick = function() {
-      document.getElementById('previewModal').style.display = 'none';
-    };
+                const pdf = await generatePDF(true);
 
-    $('closePreviewBtn').onclick = function() {
-      document.getElementById('previewModal').style.display = 'none';
-    };
+                if (pdf) {
+                    const iframe = document.getElementById('previewCanvas');
+                    const pdfBlob = pdf.output('blob');
+                    const pdfUrl = URL.createObjectURL(pdfBlob);
+                    iframe.src = pdfUrl;
 
-    // Download from preview
-    $('downloadFromPreviewBtn').onclick = async function() {
-      try {
-        const btn = $('downloadFromPreviewBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> Generating...';
-        
-        await generatePDF(false);
-        
-        btn.disabled = false;
-        btn.innerHTML = 'Download PDF';
-        document.getElementById('previewModal').style.display = 'none';
-      } catch (e) {
-        console.error(e);
-        alert("Error generating PDF: " + e.message);
-        $('downloadFromPreviewBtn').disabled = false;
-        $('downloadFromPreviewBtn').innerHTML = 'Download PDF';
-      }
-    };
+                    document.getElementById('previewModal').style.display = 'block';
+                }
 
-    // Close modal when clicking outside of it
-    window.onclick = function(event) {
-      const modal = document.getElementById('previewModal');
-      if (event.target == modal) {
-        modal.style.display = 'none';
-      }
-    };
+                btn.disabled = false;
+                btn.innerHTML = '<span>👁️</span> Preview';
+            } catch (e) {
+                console.error(e);
+                alert("Error generating preview: " + e.message);
+                $('previewBtn').disabled = false;
+                $('previewBtn').innerHTML = '<span>👁️</span> Preview';
+            }
+        };
 
-    $('genBtn').onclick = async function() {
-      try {
-        const btn = $('genBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> Generating...';
-        
-        await generatePDF(false);
-        
-        btn.disabled = false;
-        btn.innerHTML = '<span>📑</span> Generate PDF';
-        alert('PDF generated successfully!');
-      } catch (e) {
-        console.error(e);
-        alert("Error generating PDF: " + e.message);
-        $('genBtn').disabled = false;
-        $('genBtn').innerHTML = '<span>📑</span> Generate PDF';
-      }
-    };
-  </script>
+        // Modal close functionality
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('previewModal').style.display = 'none';
+        };
+
+        $('closePreviewBtn').onclick = function() {
+            document.getElementById('previewModal').style.display = 'none';
+        };
+
+        // Download from preview
+        $('downloadFromPreviewBtn').onclick = async function() {
+            try {
+                const btn = $('downloadFromPreviewBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳</span> Generating...';
+
+                await generatePDF(false);
+
+                btn.disabled = false;
+                btn.innerHTML = 'Download PDF';
+                document.getElementById('previewModal').style.display = 'none';
+            } catch (e) {
+                console.error(e);
+                alert("Error generating PDF: " + e.message);
+                $('downloadFromPreviewBtn').disabled = false;
+                $('downloadFromPreviewBtn').innerHTML = 'Download PDF';
+            }
+        };
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('previewModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        $('genBtn').onclick = async function() {
+            try {
+                const btn = $('genBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳</span> Generating...';
+
+                await generatePDF(false);
+
+                btn.disabled = false;
+                btn.innerHTML = '<span>📑</span> Generate PDF';
+                alert('PDF generated successfully!');
+            } catch (e) {
+                console.error(e);
+                alert("Error generating PDF: " + e.message);
+                $('genBtn').disabled = false;
+                $('genBtn').innerHTML = '<span>📑</span> Generate PDF';
+            }
+        };
+    </script>
 </body>
 </html>
